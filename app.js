@@ -67,3 +67,23 @@ async function exportAdminExcel(){
     Swal.close();notify('success','Excel export completed');
   }catch(e){Swal.close();notify('error','Excel export failed',e.message)}
 }
+
+async function showTeamDetail(teamId){
+  loading('Loading score detail…');
+  try{
+    const d=await rpc('getTeamScoreDetail',token,teamId);
+    const headers=d.criteria.map(c=>`<th title="${esc(c.item)}">${c.no}<small>${esc(c.weight)}%</small></th>`).join('');
+    const rows=d.judges.map(j=>`<tr><td><b>${esc(j.name)}</b><small>${esc(j.username)}</small></td>${d.criteria.map(c=>`<td class="right">${j.ratings?j.ratings[c.no]:'—'}</td>`).join('')}<td class="right"><b>${j.total===null?'—':Number(j.total).toFixed(2)}</b></td></tr>`).join('');
+    const submitted=d.judges.filter(j=>j.total!==null);
+    const criterionTotals=d.criteria.map(c=>submitted.reduce((sum,j)=>sum+(Number(j.ratings[c.no])/5*Number(c.weight)),0));
+    const teamTotal=submitted.reduce((sum,j)=>sum+Number(j.total),0),maxTotal=d.judges.length*100;
+    const summary=`<tfoot><tr class="detail-summary"><td colspan="2"><b>Team total</b><small>${submitted.length}/${d.judges.length} judges submitted</small></td>${criterionTotals.map(n=>`<td class="right"><b>${n.toFixed(1)}</b></td>`).join('')}<td class="right"><b>${teamTotal.toFixed(2)} / ${maxTotal}</b></td></tr></tfoot>`;
+    Swal.fire({...swalTheme,title:`Score detail: ${esc(d.team.name)}`,html:`<p class="detail-theme">${esc(d.team.theme)}</p><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>Judge</th>${headers}<th>Total /100</th></tr></thead><tbody>${rows}</tbody>${summary}</table></div>`,showConfirmButton:false,showCloseButton:true,allowOutsideClick:false,allowEscapeKey:false,customClass:{popup:'detail-swal-popup'}});
+  }catch(e){Swal.close();notify('error','Unable to load score detail',e.message)}
+}
+
+function showGuide(page='login'){
+  const loginPage=`<div class="guide-page"><h3>หน้า 1: เข้าสู่ระบบ</h3><ol><li>กรอก <b>Username</b> และ <b>Password</b> ที่ได้รับจากผู้ดูแลระบบ</li><li>กด <b>Enter</b> หรือปุ่ม <b>Sign in</b></li><li>ตรวจสอบข้อมูล แล้วกด <b>Sign in</b> ในหน้าต่างยืนยัน</li><li>เมื่อเข้าสู่ระบบแล้ว กรรมการสามารถเลือกภาษา English หรือ 日本語 สำหรับเกณฑ์การให้คะแนนได้</li></ol><p class="guide-note">หากเข้าสู่ระบบไม่ได้ ให้ตรวจสอบตัวพิมพ์ Username และ Password หรือติดต่อผู้ดูแลระบบ</p></div>`;
+  const scorePage=`<div class="guide-page"><h3>หน้า 2: ให้คะแนนทีมแข่งขัน</h3><ol><li>เลือกทีมจากรายการ แล้วกด <b>Score</b></li><li>เลือกคะแนน <b>1–5</b> ให้ครบทั้ง 7 หัวข้อ โดยสามารถเปิด <b>Scoring guide</b> เพื่อดูคำอธิบายแต่ละระดับ</li><li>ตรวจสอบ <b>Weighted score / 100</b> ด้านบนของแบบฟอร์ม</li><li>กด <b>Save score</b> และยืนยันการบันทึก</li><li>หลังบันทึกแล้ว ปุ่มของทีมนั้นจะเปลี่ยนเป็น <b>Edit</b> เพื่อแก้ไขคะแนนได้</li></ol><p class="guide-note">ระบบจะบันทึกคะแนนล่าสุดของกรรมการต่อหนึ่งทีม และคะแนนรวมในหน้า Admin เป็นผลรวมของกรรมการที่ส่งแล้ว</p></div>`;
+  Swal.fire({...swalTheme,title:'คู่มือการใช้งาน',html:`<nav class="guide-tabs"><button class="${page==='login'?'active':''}" onclick="showGuide('login')">1. เข้าสู่ระบบ</button><button class="${page==='score'?'active':''}" onclick="showGuide('score')">2. ให้คะแนน</button></nav>${page==='score'?scorePage:loginPage}`,showConfirmButton:false,showCloseButton:true,customClass:{popup:'guide-swal-popup'}});
+}
