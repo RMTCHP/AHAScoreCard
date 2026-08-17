@@ -73,7 +73,7 @@ async function showTeamDetail(teamId){
   try{
     const d=await rpc('getTeamScoreDetail',token,teamId);
     const headers=d.criteria.map(c=>`<th title="${esc(c.item)}">${c.no}<small>${esc(c.weight)}%</small></th>`).join('');
-    const rows=d.judges.map(j=>`<tr><td><b>${esc(j.name)}</b><small>${esc(j.username)}</small></td>${d.criteria.map(c=>`<td class="right">${j.ratings?j.ratings[c.no]:'—'}</td>`).join('')}<td class="right"><b>${j.total===null?'—':Number(j.total).toFixed(2)}</b></td></tr>`).join('');
+    const rows=d.judges.map(j=>`<tr><td><b>${esc(j.name)}</b></td>${d.criteria.map(c=>`<td class="right">${j.ratings?j.ratings[c.no]:'—'}</td>`).join('')}<td class="right"><b>${j.total===null?'—':Number(j.total).toFixed(2)}</b></td></tr>`).join('');
     const submitted=d.judges.filter(j=>j.total!==null);
     const criterionTotals=d.criteria.map(c=>submitted.reduce((sum,j)=>sum+(Number(j.ratings[c.no])/5*Number(c.weight)),0));
     const teamTotal=submitted.reduce((sum,j)=>sum+Number(j.total),0),maxTotal=d.judges.length*100;
