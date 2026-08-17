@@ -1,4 +1,4 @@
-const API_URL='https://script.google.com/macros/s/AKfycbyx8wHcYMS1oKw0TdkC2Ww8T1o3CjIOSfxDnAPW6ak95xEmcI9ek6BvK9RjsJtPBeQ/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbzLBgOjS7uiWwsOZoxVslqNg4sk0DPKAwOcMKAnDRzwFm0ZDdZq_XaxxAZNFHIkmMI/exec';
 let token=sessionStorage.getItem('ahaToken'),data=null,team=null,pending={},adminTab='results',adminFilter='all',judgeLang=sessionStorage.getItem('ahaJudgeLang')||'en';
 const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const swalTheme={confirmButtonColor:'#176bd1',cancelButtonColor:'#6b7787',showCloseButton:true,reverseButtons:true};
@@ -34,3 +34,36 @@ async function saveScore(){let ratings={},t=judgeText();for(const c of data.crit
 async function addTeam(){let box=$('teamError'),payload={name:$('tn').value.trim(),theme:$('tt').value.trim(),presenter:$('tp').value.trim(),department:$('td').value.trim()};box.textContent='';if(!payload.name){box.textContent='กรุณาระบุชื่อทีม';return}if(!await confirmAction('ยืนยันเพิ่มทีม',`เพิ่มทีม “${payload.name}” หรือไม่`,'เพิ่มทีม'))return;loading('กำลังเพิ่มทีม…');try{await rpc('addTeam',token,payload);await load(true);notify('success','เพิ่มทีมสำเร็จ')}catch(e){Swal.close();box.textContent=e.message;notify('error','เพิ่มทีมไม่สำเร็จ',e.message)}}
 async function addUser(){let box=$('userError'),payload={name:$('un').value.trim(),username:$('uu').value.trim(),password:$('up').value,role:$('ur').value};box.textContent='';if(!payload.name||!payload.username||!payload.password){box.textContent='กรุณากรอกข้อมูลให้ครบ';return}if(!await confirmAction('ยืนยันเพิ่มผู้ใช้',`เพิ่มผู้ใช้ ${payload.username} หรือไม่`,'เพิ่มผู้ใช้'))return;loading('กำลังเพิ่มผู้ใช้…');try{await rpc('addUser',token,payload);await load(true);notify('success','เพิ่มผู้ใช้สำเร็จ')}catch(e){Swal.close();box.textContent=e.message;notify('error','เพิ่มผู้ใช้ไม่สำเร็จ',e.message)}}
 if(token)load();
+
+async function exportAdminExcel(){
+  if(!await confirmAction('Confirm Excel export','The report includes a summary and one score-detail worksheet per team.','Export Excel','Cancel'))return;
+  try{
+    loading('Preparing Excel report…');
+    const detail=await rpc('getExportDetails',token),stamp=exportStamp(),expected=data.teams.length*data.judgeCount;
+    const summary=[
+      ['AHA! Selection Evaluation Criteria and Score Card'],
+      ['Exported at',new Date().toLocaleString('en-GB')],
+      ['Teams',data.teams.length],['Judges',data.judgeCount],
+      ['Score records',data.scoreCount],['Expected records',expected],
+      ['Progress',expected?data.scoreCount/expected:0]
+    ];
+    const progress=[['Judge','Username','Scored teams','Total teams','Progress']].concat((data.judgeProgress||[]).map(j=>[j.name,j.username,j.scored,j.total,j.total?j.scored/j.total:0]));
+    const results=[['Rank','Team','Theme','Status','Total score','Goal','Process','Results','Relatability','Judges scored']].concat((data.results||[]).map(x=>[x.rank||'',x.name,x.theme,x.judges===data.judgeCount?'Final':'Provisional',x.judges?x.average:'',x.judges?x.goal:'',x.judges?x.process:'',x.judges?x.results:'',x.judges?x.relatability:'',`${x.judges}/${data.judgeCount}`]));
+    const wb=XLSX.utils.book_new(),add=(rows,name,widths)=>{const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=widths.map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,name)};
+    add(summary,'Summary',[25,25]);
+    add(progress,'Judge Progress',[26,18,14,14,12]);
+    add(results,'Team Results',[8,34,45,14,14,12,14,14,18,16]);
+    const used=new Set(['Summary','Judge Progress','Team Results']);
+    detail.teams.forEach(({team,judges})=>{
+      let base=`${String(team.no).padStart(2,'0')} ${team.name}`.replace(/[\\\\/?*\[\]:]/g,' ').trim().slice(0,31)||`Team ${team.no}`,sheetName=base,n=2;
+      while(used.has(sheetName))sheetName=`${base.slice(0,28)} ${n++}`;
+      used.add(sheetName);
+      const header=['Judge','Username',...detail.criteria.map(c=>`${c.no}. ${c.item} (${c.weight}%)`),'Total /100'];
+      const judgeRows=judges.map(j=>[j.name,j.username,...detail.criteria.map(c=>j.ratings?j.ratings[c.no]:''),j.total===null?'':j.total]);
+      const teamTotal=judges.reduce((sum,j)=>sum+(j.total===null?0:Number(j.total)),0);
+      add([[`Score detail: ${team.name}`],['Theme',team.theme],[],header,...judgeRows,[],['Team total',...Array(detail.criteria.length+1).fill(''),teamTotal]],sheetName,[26,18,...detail.criteria.map(()=>15),14]);
+    });
+    XLSX.writeFile(wb,`aha-score-card_${stamp}.xlsx`);
+    Swal.close();notify('success','Excel export completed');
+  }catch(e){Swal.close();notify('error','Excel export failed',e.message)}
+}
