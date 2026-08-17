@@ -72,13 +72,13 @@ async function showTeamDetail(teamId){
   loading('Loading score detail…');
   try{
     const d=await rpc('getTeamScoreDetail',token,teamId);
-    const headers=d.criteria.map(c=>`<th title="${esc(c.item)}">${c.no}<small>${esc(c.weight)}%</small></th>`).join('');
+    const headers=d.criteria.map(c=>`<th class="right" title="${esc(c.item)}">${c.no}<small>${esc(c.weight)}%</small></th>`).join('');
     const rows=d.judges.map(j=>`<tr><td><b>${esc(j.name)}</b></td>${d.criteria.map(c=>`<td class="right">${j.ratings?j.ratings[c.no]:'—'}</td>`).join('')}<td class="right"><b>${j.total===null?'—':Number(j.total).toFixed(2)}</b></td></tr>`).join('');
     const submitted=d.judges.filter(j=>j.total!==null);
     const criterionTotals=d.criteria.map(c=>submitted.reduce((sum,j)=>sum+(Number(j.ratings[c.no])/5*Number(c.weight)),0));
     const teamTotal=submitted.reduce((sum,j)=>sum+Number(j.total),0),maxTotal=d.judges.length*100;
     const summary=`<tfoot><tr class="detail-summary"><td><b>Team total</b><small>${submitted.length}/${d.judges.length} judges submitted</small></td>${criterionTotals.map(n=>`<td class="right"><b>${n.toFixed(1)}</b></td>`).join('')}<td class="right"><b>${teamTotal.toFixed(2)} / ${maxTotal}</b></td></tr></tfoot>`;
-    Swal.fire({...swalTheme,title:`Score detail: ${esc(d.team.name)}`,html:`<p class="detail-theme">${esc(d.team.theme)}</p><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>Judge</th>${headers}<th>Total /100</th></tr></thead><tbody>${rows}</tbody>${summary}</table></div>`,showConfirmButton:false,showCloseButton:true,allowOutsideClick:false,allowEscapeKey:false,customClass:{popup:'detail-swal-popup'}});
+    Swal.fire({...swalTheme,title:`Score detail: ${esc(d.team.name)}`,html:`<p class="detail-theme">${esc(d.team.theme)}</p><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>Judge</th>${headers}<th class="right">Total /100</th></tr></thead><tbody>${rows}</tbody>${summary}</table></div>`,showConfirmButton:false,showCloseButton:true,allowOutsideClick:false,allowEscapeKey:false,customClass:{popup:'detail-swal-popup'}});
   }catch(e){Swal.close();notify('error','Unable to load score detail',e.message)}
 }
 
