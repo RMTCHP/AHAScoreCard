@@ -77,7 +77,7 @@ async function showTeamDetail(teamId){
     const submitted=d.judges.filter(j=>j.total!==null);
     const criterionTotals=d.criteria.map(c=>submitted.reduce((sum,j)=>sum+(Number(j.ratings[c.no])/5*Number(c.weight)),0));
     const teamTotal=submitted.reduce((sum,j)=>sum+Number(j.total),0),maxTotal=d.judges.length*100;
-    const summary=`<tfoot><tr class="detail-summary"><td colspan="2"><b>Team total</b><small>${submitted.length}/${d.judges.length} judges submitted</small></td>${criterionTotals.map(n=>`<td class="right"><b>${n.toFixed(1)}</b></td>`).join('')}<td class="right"><b>${teamTotal.toFixed(2)} / ${maxTotal}</b></td></tr></tfoot>`;
+    const summary=`<tfoot><tr class="detail-summary"><td><b>Team total</b><small>${submitted.length}/${d.judges.length} judges submitted</small></td>${criterionTotals.map(n=>`<td class="right"><b>${n.toFixed(1)}</b></td>`).join('')}<td class="right"><b>${teamTotal.toFixed(2)} / ${maxTotal}</b></td></tr></tfoot>`;
     Swal.fire({...swalTheme,title:`Score detail: ${esc(d.team.name)}`,html:`<p class="detail-theme">${esc(d.team.theme)}</p><div class="detail-table-wrap"><table class="detail-table"><thead><tr><th>Judge</th>${headers}<th>Total /100</th></tr></thead><tbody>${rows}</tbody>${summary}</table></div>`,showConfirmButton:false,showCloseButton:true,allowOutsideClick:false,allowEscapeKey:false,customClass:{popup:'detail-swal-popup'}});
   }catch(e){Swal.close();notify('error','Unable to load score detail',e.message)}
 }
