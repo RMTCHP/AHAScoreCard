@@ -1,4 +1,4 @@
-const API_URL='https://script.google.com/macros/s/AKfycbzwkYhIyjj0u_EgJ5kQz9cqOMw6VfZMsPyMnqLQ7mcAh9OGMWfsCtuzkFplPFdvtH4/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbyx8wHcYMS1oKw0TdkC2Ww8T1o3CjIOSfxDnAPW6ak95xEmcI9ek6BvK9RjsJtPBeQ/exec';
 let token=sessionStorage.getItem('ahaToken'),data=null,team=null,pending={},adminTab='results',adminFilter='all',judgeLang=sessionStorage.getItem('ahaJudgeLang')||'en';
 const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const swalTheme={confirmButtonColor:'#176bd1',cancelButtonColor:'#6b7787',showCloseButton:true,reverseButtons:true};
