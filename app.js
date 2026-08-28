@@ -130,3 +130,4 @@ showGuide=function(page=guidePage){
     if(panel){panel.classList.remove('manual-slide-next','manual-slide-prev','manual-fade');void panel.offsetWidth;requestAnimationFrame(()=>panel.classList.add(animation));}
   }else Swal.fire({...swalTheme,html:content,showConfirmButton:false,showCloseButton:true,allowOutsideClick:false,customClass:{popup:'manual-swal-popup',htmlContainer:'manual-swal-html'}});
 };
+function showSchedule(){Swal.fire({...swalTheme,title:'AHA Schedule - 14 September 2026',html:'<iframe class="schedule-pdf" src="asset/ScheduleAHA_14Sep26.pdf#view=FitH" title="AHA Schedule"></iframe>',showConfirmButton:false,showCloseButton:true,allowOutsideClick:false,customClass:{popup:'schedule-swal-popup',htmlContainer:'schedule-swal-html'}})}
