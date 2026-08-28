@@ -21,3 +21,6 @@ header{position:sticky;top:0;z-index:100;box-shadow:0 2px 10px #092c531f}
 @media(max-width:850px){.target-criteria>.criterion:only-child{grid-template-columns:1fr}.target-criteria>.criterion:only-child .score-select{justify-content:flex-start;min-height:auto}.target-criteria>.criterion:only-child .score-guide{max-width:none}}
 button.logout{background:#fff1f2;border:1px solid #fecdd3;color:#b42318}button.logout:hover{background:#ffe4e6;border-color:#fda4af;box-shadow:0 3px 10px #9f123925}
 .score-swal-popup .criteria-list{min-height:0;overflow-y:auto!important;padding-right:4px}.target-criteria>.criterion:only-child .score-select{min-height:0;padding:9px 12px}.target-criteria>.criterion:only-child .score-guide{margin-top:0}
+.target-criteria>.criterion:only-child .score-select{grid-row:1 / span 2;padding:6px 8px}.target-criteria>.criterion:only-child .score-select::before{margin-right:6px;font-size:11px}.target-criteria>.criterion:only-child .score-select select{width:132px;padding:6px 8px;font-size:16px}.target-criteria>.criterion:only-child .score-guide{align-self:start}
+@media(max-width:850px){.target-criteria>.criterion:only-child .score-select{grid-row:auto}.target-criteria>.criterion:only-child .score-select select{width:150px}}
+.score-swal-popup .criterion>div:first-child>p{white-space:pre-line}
